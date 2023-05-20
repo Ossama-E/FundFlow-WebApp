@@ -79,21 +79,58 @@ const displayMovements = function (movements) {
     <div class="movements__type movements__type--${type}">${
       index + 1
     }: ${type}</div>
-    <div class="movements__value">${amount}</div>
+    <div class="movements__value">${amount} €</div>
   </div>`;
     containerMovements.insertAdjacentHTML("afterbegin", newMovementHTML);
   });
 };
 const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-const createUsername = function (fullName) {
-  const username = fullName
-    .split(" ")
-    .map((name) => name[0].toUpperCase())
-    .join("");
-  return username;
+const createUsernames = function (accs) {
+  const createUsername = function (fullName) {
+    const username = fullName
+      .split(" ")
+      .map((name) => name[0].toUpperCase())
+      .join("");
+    return username;
+  };
+  accs.forEach(function (account) {
+    account.username = createUsername(account.owner);
+  });
+  // accountsList.map(createUsername(givenName));
 };
+
+const displayBalance = function (movements) {
+  const balance = movements.reduce((acc, curr) => acc + curr, 0);
+  labelBalance.textContent = `${balance}€`;
+  console.log(balance);
+};
+const calcAccountSummary = function (movements) {
+  // IN
+  const income = movements
+    .filter((move) => move > 0)
+    .reduce((acc, sum) => acc + sum, 0);
+  labelSumIn.textContent = `${income}€`;
+  // OUT
+  const spending = Math.abs(
+    movements.filter((move) => move < 0).reduce((acc, sum) => acc + sum, 0)
+  );
+  labelSumOut.textContent = `${spending}€`;
+  // INTEREST
+  const interest = movements
+    .filter((move) => move > 0)
+    .map((amount) => (amount * 1.2) / 100)
+    .filter((value, i, arr) => value > 1)
+    .reduce((acc, sum) => acc + sum, 0);
+  labelSumInterest.textContent = interest;
+  // console.log(spending);
+};
+calcAccountSummary(account1.movements);
+displayBalance(account1.movements);
+
+// console.log(balance);
 // console.log(createUsername('Ossama Elhelali'));
-console.log(createUsername("Ossama Elhelali"));
+// createUsernames(accounts);
+
 displayMovements(movements);
 
 /////////////////////////////////////////////////
