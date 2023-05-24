@@ -75,6 +75,7 @@ const currencies = new Map([
   ["GBP", "Pound sterling"],
 ]);
 
+let sort = false;
 function displayPopup(message) {
   // const popup = document.querySelector(".popup");
   popup.textContent = message;
@@ -103,9 +104,13 @@ function closePopup() {
 }
 
 // Function to display account movements
-const displayMovements = function (account) {
+const displayMovements = function (account, sorted = false) {
   containerMovements.innerHTML = "";
-  account.movements.forEach(function (amount, index) {
+  const movsToUse = sorted
+    ? account.movements.slice().sort((a, b) => a - b)
+    : account.movements;
+
+  movsToUse.forEach(function (amount, index) {
     const type = amount > 0 ? `deposit` : `withdrawal`;
     const newMovementHTML = `<div class="movements__row">
     <div class="movements__type movements__type--${type}">${
@@ -168,10 +173,10 @@ const checkLogin = function (username, pass, accounts) {
   return [false];
 };
 
-const updateAccount = function (account) {
+const updateAccount = function (account, sort = false) {
   calcAccountSummary(account);
   displayBalance(account);
-  displayMovements(account);
+  sort ? displayMovements(account, true) : displayMovements(account);
 };
 let loggedAccount;
 // Login button click event handler
@@ -272,4 +277,11 @@ btnClose.addEventListener("click", function (e) {
     displayPopup("Account Deleted!");
     closePopup();
   }
+});
+
+btnSort.addEventListener("click", function (e) {
+  e.preventDefault();
+  console.log("test");
+  sort = !sort;
+  updateAccount(loggedAccount, sort);
 });
