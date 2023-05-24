@@ -1,10 +1,9 @@
+/////////////////////////////////////////////////
 "use strict";
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
 // BANKIST APP
 
-// Data
+// Account data
 const account1 = {
   owner: "Jonas Schmedtmann",
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
@@ -18,7 +17,6 @@ const account2 = {
   interestRate: 1.5,
   pin: 2222,
 };
-
 const account3 = {
   owner: "Steven Thomas Williams",
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
@@ -33,6 +31,7 @@ const account4 = {
   pin: 4444,
 };
 
+// HTML element selectors
 const accounts = [account1, account2, account3, account4];
 
 // Elements
@@ -61,15 +60,42 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
+const popup = document.querySelector(".popup");
 
+// Currency mapping
 const currencies = new Map([
   ["USD", "United States dollar"],
   ["EUR", "Euro"],
   ["GBP", "Pound sterling"],
 ]);
 
+function displayPopup(message) {
+  // const popup = document.querySelector(".popup");
+  popup.textContent = message;
+  popup.style.display = "block";
+  popup.classList.add("popup-enter");
+
+  // Remove the 'popup-enter' class after the animation ends
+  setTimeout(() => {
+    popup.classList.remove("popup-enter");
+  }, 1000); // Animation duration
+
+  // Close the popup after a delay
+  setTimeout(closePopup, 3000); // Adjust this value to change the delay
+}
+
+function closePopup() {
+  // const popup = document.querySelector(".popup");
+  popup.classList.add("popup-exit");
+
+  // Remove the 'popup-exit' class and hide the popup after the animation ends
+  setTimeout(() => {
+    popup.classList.remove("popup-exit");
+    popup.style.display = "none";
+  }, 6000); // Animation duration
+}
+
+// Function to display account movements
 const displayMovements = function (movements) {
   containerMovements.innerHTML = "";
   movements.forEach(function (amount, index) {
@@ -83,26 +109,28 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML("afterbegin", newMovementHTML);
   });
 };
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+
+// Function to create usernames for accounts
 const createUsernames = function (accs) {
-  const createUsername = function (fullName) {
-    const username = fullName
+  accs.forEach(function (account) {
+    account.username = account.owner
       .split(" ")
       .map((name) => name[0].toUpperCase())
       .join("");
-    return username;
-  };
-  accs.forEach(function (account) {
-    account.username = createUsername(account.owner);
   });
 };
+
 createUsernames(accounts);
 
+// Function to display account balance
 const displayBalance = function (movements) {
   const balance = movements.reduce((acc, curr) => acc + curr, 0);
   labelBalance.textContent = `${balance}€`;
 };
-const calcAccountSummary = function (movements) {
+
+// Function to calculate and display account summary
+const calcAccountSummary = function (account) {
+  const movements = account.movements;
   // IN
   const income = movements
     .filter((move) => move > 0)
@@ -116,23 +144,24 @@ const calcAccountSummary = function (movements) {
   // INTEREST
   const interest = movements
     .filter((move) => move > 0)
-    .map((amount) => (amount * 1.2) / 100)
+    .map((amount) => (amount * account.interestRate) / 100)
     .filter((value, i, arr) => value > 1)
     .reduce((acc, sum) => acc + sum, 0)
     .toFixed(2);
   labelSumInterest.textContent = interest;
 };
 
+// Function to check login credentials
 const checkLogin = function (username, pass, accounts) {
   for (const acc of accounts) {
     if (acc.username == username && acc.pin == pass) {
-      const data = [true, acc];
-      return data;
+      return [true, acc];
     }
   }
-  return false;
+  return [false];
 };
 
+// Login button click event handler
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault();
   const loginFeedback = checkLogin(
@@ -140,13 +169,52 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginPin.value,
     accounts
   );
+  // Login Creds found
   if (loginFeedback[0]) {
     const loggedAccount = loginFeedback[1];
+    labelWelcome.textContent = `Welcome Back, ${loggedAccount.owner}`;
+    calcAccountSummary(loggedAccount);
     displayBalance(loggedAccount.movements);
     displayMovements(loggedAccount.movements);
-    calcAccountSummary(loggedAccount.movements);
     containerApp.style.opacity = 1;
   }
+  // Unsuccessful login
+  else {
+    displayPopup("Incorrect, please try again");
+    closePopup();
+  }
+
+  // Clear input
+  inputLoginPin.value = inputLoginUsername.value = "";
+  inputLoginPin.blur();
 });
 
-/////////////////////////////////////////////////
+// Transferring Money
+btnTransfer.addEventListener("click", function (e) {
+  e.preventDefault();
+
+  // Identify if inputted user is a valid account
+  const validTo = accounts.find(
+    (acc) => acc.username === inputTransferTo.value
+  );
+
+  console.log(validTo);
+
+  if (!validTo) {
+    displayPopup("Please enter a valid username");
+    closePopup();
+  } else {
+    // Identify positive amount
+    const validAmount = inputTransferAmount.value > 0;
+    // Process transfer
+    if (validAmount) {
+      validTo.movements.push(Number(inputTransferAmount.value));
+    } else {
+      // Invalid amount, don't process
+      displayPopup("Please enter a positive amount");
+      closePopup();
+    }
+    // Reset input fields
+    inputTransferTo.value = inputTransferAmount.value = "";
+  }
+});
