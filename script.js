@@ -84,10 +84,11 @@ function displayPopup(message) {
   // Remove the 'popup-enter' class after the animation ends
   setTimeout(() => {
     popup.classList.remove("popup-enter");
-  }, 2000); // Animation duration
+  }, 1500); // Animation duration
 
   // Close the popup after a delay
-  setTimeout(closePopup, 3000); // Adjust this value to change the delay
+  setTimeout(closePopup, 1000); // Adjust this value to change the delay
+  closePopup();
 }
 
 function closePopup() {
@@ -98,7 +99,7 @@ function closePopup() {
   setTimeout(() => {
     popup.classList.remove("popup-exit");
     popup.style.display = "none";
-  }, 6000); // Animation duration
+  }, 3500); // Animation duration
 }
 
 // Function to display account movements
