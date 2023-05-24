@@ -132,6 +132,15 @@ function displayPopup(message) {
   closePopup();
 }
 
+const alternateColor = function () {
+  document.querySelectorAll(".movements__row").forEach(function (row, index) {
+    console.log("testts");
+    if (index % 2 === 0) {
+      row.style.backgroundColor = "#f9f6e8";
+    }
+  });
+};
+
 function closePopup() {
   // const popup = document.querySelector(".popup");
   popup.classList.add("popup-exit");
@@ -201,7 +210,7 @@ const calcAccountSummary = function (account) {
     .filter((value, i, arr) => value > 1)
     .reduce((acc, sum) => acc + sum, 0)
     .toFixed(2);
-  labelSumInterest.textContent = interest.toFixed(2);
+  labelSumInterest.textContent = interest;
 };
 
 // Function to check login credentials
@@ -233,6 +242,7 @@ btnLogin.addEventListener("click", function (e) {
     loggedAccount = loginFeedback[1];
     labelWelcome.textContent = `Welcome Back, ${loggedAccount.owner}`;
     updateAccount(loggedAccount);
+    alternateColor();
     containerApp.style.opacity = 1;
   }
   // Unsuccessful login
@@ -255,7 +265,7 @@ btnTransfer.addEventListener("click", function (e) {
     (acc) => acc.username === inputTransferTo.value
   );
 
-  console.log(validTo);
+  // console.log(validTo);
 
   // Check validity of username
   if (!validTo) {
