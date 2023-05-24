@@ -147,6 +147,7 @@ const calcAccountSummary = function (account) {
   const income = movements
     .filter((move) => move > 0)
     .reduce((acc, sum) => acc + sum, 0);
+  console.log(income);
   labelSumIn.textContent = `${income}€`;
   // OUT
   const spending = Math.abs(
@@ -279,9 +280,30 @@ btnClose.addEventListener("click", function (e) {
   }
 });
 
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault();
+  const loanAmount = inputLoanAmount.value;
+  if (Number(loanAmount) < 0) {
+    displayPopup("Please enter a valid amount");
+    closePopup();
+    inputLoanAmount.value = "";
+  } else if (
+    loggedAccount.movements.some((deposit) => deposit >= loanAmount * 0.1)
+  ) {
+    displayPopup("Loan Successfully Deposited");
+    closePopup();
+    loggedAccount.movements.push(Number(loanAmount));
+    updateAccount(loggedAccount);
+  } else {
+    displayPopup(`You don't qualify for this amount`);
+    closePopup();
+  }
+  inputLoanAmount.value = "";
+});
+
 btnSort.addEventListener("click", function (e) {
   e.preventDefault();
-  console.log("test");
+  // console.log("test");
   sort = !sort;
   updateAccount(loggedAccount, sort);
 });
