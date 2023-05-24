@@ -31,8 +31,14 @@ const account4 = {
   pin: 4444,
 };
 
+const account5 = {
+  owner: "Test Case",
+  movements: [430, 1000, 700, 50, 90],
+  interestRate: 1,
+  pin: 3333,
+};
 // HTML element selectors
-const accounts = [account1, account2, account3, account4];
+const accounts = [account1, account2, account3, account4, account5];
 
 // Elements
 const labelWelcome = document.querySelector(".welcome");
@@ -78,7 +84,7 @@ function displayPopup(message) {
   // Remove the 'popup-enter' class after the animation ends
   setTimeout(() => {
     popup.classList.remove("popup-enter");
-  }, 1000); // Animation duration
+  }, 2000); // Animation duration
 
   // Close the popup after a delay
   setTimeout(closePopup, 3000); // Adjust this value to change the delay
@@ -96,9 +102,9 @@ function closePopup() {
 }
 
 // Function to display account movements
-const displayMovements = function (movements) {
+const displayMovements = function (account) {
   containerMovements.innerHTML = "";
-  movements.forEach(function (amount, index) {
+  account.movements.forEach(function (amount, index) {
     const type = amount > 0 ? `deposit` : `withdrawal`;
     const newMovementHTML = `<div class="movements__row">
     <div class="movements__type movements__type--${type}">${
@@ -123,9 +129,9 @@ const createUsernames = function (accs) {
 createUsernames(accounts);
 
 // Function to display account balance
-const displayBalance = function (movements) {
-  const balance = movements.reduce((acc, curr) => acc + curr, 0);
-  labelBalance.textContent = `${balance}€`;
+const displayBalance = function (account) {
+  account.balance = account.movements.reduce((acc, curr) => acc + curr, 0);
+  labelBalance.textContent = `${account.balance}€`;
 };
 
 // Function to calculate and display account summary
@@ -161,6 +167,12 @@ const checkLogin = function (username, pass, accounts) {
   return [false];
 };
 
+const updateAccount = function (account) {
+  calcAccountSummary(account);
+  displayBalance(account);
+  displayMovements(account);
+};
+let loggedAccount;
 // Login button click event handler
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault();
@@ -171,11 +183,9 @@ btnLogin.addEventListener("click", function (e) {
   );
   // Login Creds found
   if (loginFeedback[0]) {
-    const loggedAccount = loginFeedback[1];
+    loggedAccount = loginFeedback[1];
     labelWelcome.textContent = `Welcome Back, ${loggedAccount.owner}`;
-    calcAccountSummary(loggedAccount);
-    displayBalance(loggedAccount.movements);
-    displayMovements(loggedAccount.movements);
+    updateAccount(loggedAccount);
     containerApp.style.opacity = 1;
   }
   // Unsuccessful login
@@ -200,15 +210,33 @@ btnTransfer.addEventListener("click", function (e) {
 
   console.log(validTo);
 
+  // Check validity of username
   if (!validTo) {
     displayPopup("Please enter a valid username");
     closePopup();
   } else {
-    // Identify positive amount
+    // Username is valid, continue
+
+    // Validate a positive amount
     const validAmount = inputTransferAmount.value > 0;
-    // Process transfer
+
     if (validAmount) {
-      validTo.movements.push(Number(inputTransferAmount.value));
+      // Check if the account holder has enough money
+      if (loggedAccount.balance >= Number(inputTransferAmount.value)) {
+        // Process the transfer on both ends
+
+        loggedAccount.movements.push(-Number(inputTransferAmount.value));
+        validTo.movements.push(Number(inputTransferAmount.value));
+        displayPopup("Transfer Completed!");
+        closePopup();
+        updateAccount(loggedAccount);
+      } else {
+        // User doesn't have enough money
+        displayPopup(
+          "You currently don't have enough funds to complete the transfer"
+        );
+        closePopup();
+      }
     } else {
       // Invalid amount, don't process
       displayPopup("Please enter a positive amount");
@@ -216,5 +244,31 @@ btnTransfer.addEventListener("click", function (e) {
     }
     // Reset input fields
     inputTransferTo.value = inputTransferAmount.value = "";
+  }
+});
+
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault();
+  if (
+    inputClosePin.value != loggedAccount.pin ||
+    inputCloseUsername.value != loggedAccount.username
+  ) {
+    displayPopup("Please enter a valid username/password");
+    closePopup();
+  } else {
+    const indexToClose = accounts.findIndex(
+      (acc) => acc.username === loggedAccount.username
+    );
+    // Delete Account
+    accounts.splice(indexToClose, 1);
+
+    // Hide elements and data
+    containerApp.style.opacity = "0";
+
+    // Reset input fields
+    inputClosePin.value = inputCloseUsername.value = "";
+
+    displayPopup("Account Deleted!");
+    closePopup();
   }
 });
