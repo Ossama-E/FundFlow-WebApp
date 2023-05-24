@@ -80,7 +80,7 @@ const account7 = {
 // HTML element selectors
 const accounts = [account1, account2, account3, account4, account5];
 
-// Elements
+// HTML element selectors
 const labelWelcome = document.querySelector(".welcome");
 const labelDate = document.querySelector(".date");
 const labelBalance = document.querySelector(".balance__value");
@@ -108,6 +108,7 @@ const inputClosePin = document.querySelector(".form__input--pin");
 
 const popup = document.querySelector(".popup");
 
+let loggedAccount;
 // Currency mapping
 const currencies = new Map([
   ["USD", "United States dollar"],
@@ -115,6 +116,7 @@ const currencies = new Map([
   ["GBP", "Pound sterling"],
 ]);
 
+// Popup management
 let sort = false;
 function displayPopup(message) {
   // const popup = document.querySelector(".popup");
@@ -131,16 +133,6 @@ function displayPopup(message) {
   setTimeout(closePopup, 1000); // Adjust this value to change the delay
   closePopup();
 }
-
-const alternateColor = function () {
-  document.querySelectorAll(".movements__row").forEach(function (row, index) {
-    console.log("testts");
-    if (index % 2 === 0) {
-      row.style.backgroundColor = "#f9f6e8";
-    }
-  });
-};
-
 function closePopup() {
   // const popup = document.querySelector(".popup");
   popup.classList.add("popup-exit");
@@ -152,8 +144,8 @@ function closePopup() {
   }, 3500); // Animation duration
 }
 
-// Function to display account movements
-const displayMovements = function (account, sorted = false) {
+// Account display management
+function displayMovements(account, sorted = false) {
   containerMovements.innerHTML = "";
   const movsToUse = sorted
     ? account.movements.slice().sort((a, b) => a - b)
@@ -169,28 +161,12 @@ const displayMovements = function (account, sorted = false) {
   </div>`;
     containerMovements.insertAdjacentHTML("afterbegin", newMovementHTML);
   });
-};
-
-// Function to create usernames for accounts
-const createUsernames = function (accs) {
-  accs.forEach(function (account) {
-    account.username = account.owner
-      .split(" ")
-      .map((name) => name[0].toUpperCase())
-      .join("");
-  });
-};
-
-createUsernames(accounts);
-
-// Function to display account balance
-const displayBalance = function (account) {
+}
+function displayBalance(account) {
   account.balance = account.movements.reduce((acc, curr) => acc + curr, 0);
   labelBalance.textContent = `${account.balance.toFixed(2)}€`;
-};
-
-// Function to calculate and display account summary
-const calcAccountSummary = function (account) {
+}
+function calcAccountSummary(account) {
   const movements = account.movements;
   // IN
   const income = movements
@@ -211,25 +187,40 @@ const calcAccountSummary = function (account) {
     .reduce((acc, sum) => acc + sum, 0)
     .toFixed(2);
   labelSumInterest.textContent = interest;
-};
+}
+function updateAccount(account, sort = false) {
+  calcAccountSummary(account);
+  displayBalance(account);
+  sort ? displayMovements(account, true) : displayMovements(account);
+}
+function alternateColor() {
+  document.querySelectorAll(".movements__row").forEach(function (row, index) {
+    console.log("testts");
+    if (index % 2 === 0) {
+      row.style.backgroundColor = "#f9f6e8";
+    }
+  });
+}
 
-// Function to check login credentials
-const checkLogin = function (username, pass, accounts) {
+// Account logic
+function createUsernames(accs) {
+  accs.forEach(function (account) {
+    account.username = account.owner
+      .split(" ")
+      .map((name) => name[0].toUpperCase())
+      .join("");
+  });
+}
+function checkLogin(username, pass, accounts) {
   for (const acc of accounts) {
     if (acc.username == username && acc.pin == pass) {
       return [true, acc];
     }
   }
   return [false];
-};
+}
 
-const updateAccount = function (account, sort = false) {
-  calcAccountSummary(account);
-  displayBalance(account);
-  sort ? displayMovements(account, true) : displayMovements(account);
-};
-let loggedAccount;
-// Login button click event handler
+// Event handlers
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault();
   const loginFeedback = checkLogin(
@@ -256,7 +247,6 @@ btnLogin.addEventListener("click", function (e) {
   inputLoginPin.blur();
 });
 
-// Transferring Money
 btnTransfer.addEventListener("click", function (e) {
   e.preventDefault();
 
@@ -353,7 +343,9 @@ btnLoan.addEventListener("click", function (e) {
 
 btnSort.addEventListener("click", function (e) {
   e.preventDefault();
-  // console.log("test");
   sort = !sort;
   updateAccount(loggedAccount, sort);
 });
+
+// Initial operations
+createUsernames(accounts);
