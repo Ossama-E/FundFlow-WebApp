@@ -387,6 +387,10 @@ btnTransfer.addEventListener("click", function (e) {
   if (!validTo) {
     displayPopup("Please enter a valid username");
     closePopup();
+  } else if (validTo === loggedAccount) {
+    // User is transferring money to themselves
+    displayPopup("You cannot transfer money to yourself");
+    closePopup();
   } else {
     // Username is valid, continue
 
