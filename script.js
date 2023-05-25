@@ -120,10 +120,10 @@ const currencies = new Map([
   ["GBP", "Pound sterling"],
 ]);
 
-// Temporary login
-loggedAccount = account1;
-updateAccount(loggedAccount);
-containerApp.style.opacity = 100;
+// // Temporary login
+// loggedAccount = account1;
+// updateAccount(loggedAccount);
+// containerApp.style.opacity = 100;
 
 // Function to calculate days between two dates
 // const calcDaysPassed = (date1, date2) =>
