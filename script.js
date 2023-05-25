@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////
 "use strict";
 
-// BANKIST APP
+// FundFlow APP
 
 // Account data
 const account1 = {
