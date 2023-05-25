@@ -67,20 +67,15 @@ const account7 = {
   locale: "en-AU",
 };
 
-// HTML element selectors
-const accounts = [account1, account2, account3, account4, account5, account6];
-const getRandomDateInLast15Days = () => {
-  let date = new Date();
-  let daysAgo = Math.floor(Math.random() * 16); // random number between 0 and 19
-  date.setDate(date.getDate() - daysAgo);
-  return date.toISOString();
-};
-
-accounts.forEach((account) => {
-  account.movementsDates = account.movements.map(() =>
-    getRandomDateInLast15Days()
-  );
-});
+const accounts = [
+  account1,
+  account2,
+  account3,
+  account4,
+  account5,
+  account6,
+  account7,
+];
 
 // HTML element selectors
 const labelWelcome = document.querySelector(".welcome");
@@ -113,26 +108,57 @@ const popup = document.querySelector(".popup");
 let loggedAccount;
 let sort = false;
 
-// Currency mapping
+// Initialzing Processes:
+// 1- Generate Random Transaction Dates for each account
+accounts.forEach((account) => {
+  account.movementsDates = account.movements.map(() =>
+    getRandomDateInLast15Days()
+  );
+});
+
+// 2- Currency mapping
 const currencies = new Map([
   ["USD", "United States dollar"],
   ["EUR", "Euro"],
   ["GBP", "Pound sterling"],
 ]);
 
-// // Temporary login
-// loggedAccount = account1;
-// updateAccount(loggedAccount);
-// containerApp.style.opacity = 100;
+const options = {
+  minute: "numeric",
+  hour: "numeric",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  weekday: "short",
+};
 
-// Function to calculate days between two dates
-// const calcDaysPassed = (date1, date2) =>
-//   Math.round(Math.abs((date1 - date2) / (1000 * 60 * 60 * 24)));
+let currDate = new Date();
 
-// Function to return different date formats
+const locale = navigator.language;
+labelDate.textContent = new Intl.DateTimeFormat("en-US", options).format(
+  currDate
+);
+
+// Displaying Date with the locale profile
+let dateDisplay = movDate(currDate, true);
+
+createUsernames(accounts);
+
+// Helper Functions
+
+// Dates Helper Functions:
+
+// 1- Function to return different date formats
 function movDate(date, locale) {
+  console.log(date);
+  const isValidDate = (date) => date instanceof Date && !isNaN(date);
+
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs((date2 - date1) / (1000 * 60 * 60 * 24)));
+
+  if (!isValidDate(date)) {
+    return "Invalid Date"; // Return a default value for invalid dates
+  }
 
   const daysPassed = calcDaysPassed(new Date(), date);
 
@@ -144,23 +170,16 @@ function movDate(date, locale) {
   return new Intl.DateTimeFormat(loggedAccount.locale).format(date);
 }
 
-let currDate = new Date();
+// 2- Generating random date within last 15 days and keep it as a Date object
+function getRandomDateInLast15Days() {
+  let date = new Date();
+  let daysAgo = Math.floor(Math.random() * 16); // random number between 0 and 19
+  date.setDate(date.getDate() - daysAgo);
+  return date; // Removed conversion to string with toISOString()
+}
 
-let dateDisplay = movDate(currDate, true);
-const options = {
-  minute: "numeric",
-  hour: "numeric",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-  weekday: "short",
-};
-const locale = navigator.language;
-labelDate.textContent = new Intl.DateTimeFormat("en-US", options).format(
-  currDate
-);
-
-// Popup management
+// Pop-ups helper functions
+// 1- Displaying a pop-up with a message
 function displayPopup(message) {
   // const popup = document.querySelector(".popup");
   popup.textContent = message;
@@ -176,6 +195,7 @@ function displayPopup(message) {
   setTimeout(closePopup, 1000); // Adjust this value to change the delay
   closePopup();
 }
+// 2- Closing the pop-up
 function closePopup() {
   // const popup = document.querySelector(".popup");
   popup.classList.add("popup-exit");
@@ -187,7 +207,8 @@ function closePopup() {
   }, 3500); // Animation duration
 }
 
-// Account display management
+// Account Helper Functions
+// 1- Account display management
 function displayMovements(account, sorted = false) {
   containerMovements.innerHTML = "";
   const movsToUse = sorted
@@ -195,30 +216,30 @@ function displayMovements(account, sorted = false) {
     : account.movements;
 
   movsToUse.forEach(function (amount, index) {
-    let currDateMov = new Date(account.movementsDates[index]);
-    const daysPassed = movDate(currDateMov, false, true);
+    const currDateMov = account.movementsDates[index]; // Retrieve the Date object directly
+    const daysPassed = movDate(currDateMov); // Pass the Date object to movDate function
     const type = amount > 0 ? "deposit" : "withdrawal";
-    const amountFormatted = new Intl.NumberFormat(account.locale, {
-      style: "currency",
-      currency: account.currency,
-    }).format(amount);
+    const amountFormatted = formatAmount(amount, account); // Format the amount using the account's locale
+
     const newMovementHTML = `<div class="movements__row">
-    <div class="movements__type movements__type--${type}">${
+      <div class="movements__type movements__type--${type}">${
       index + 1
     }: ${type}</div>
-    <div class="movements__date">${daysPassed}</div>
-    <div class="movements__value">${amountFormatted}</div>
-  </div>`;
+      <div class="movements__date">${daysPassed}</div>
+      <div class="movements__value">${amountFormatted}</div>
+    </div>`;
+
     containerMovements.insertAdjacentHTML("afterbegin", newMovementHTML);
   });
 }
 
+// 2- Displaying balance on UI
 function displayBalance(account) {
   account.balance = account.movements.reduce((acc, curr) => acc + curr, 0);
   labelBalance.textContent = formatAmount(account.balance, account);
 }
 
-//
+// 3- Formatting amounts/numbers based on the accounts currency and locale
 function formatAmount(amount, account) {
   let amountFormatted = new Intl.NumberFormat(account.locale, {
     style: "currency",
@@ -227,30 +248,7 @@ function formatAmount(amount, account) {
   return amountFormatted;
 }
 
-//
-function startTimer(duration) {
-  setInterval(function () {
-    let min = String(Math.floor(duration / 60)).padStart(2, 0);
-    let sec = String(Math.floor(duration % 60)).padStart(2, 0);
-    labelTimer.textContent = `${min}:${sec}`;
-    --duration;
-    // console.log("hi");
-  }, 1000);
-
-  setTimeout(function () {
-    // Reset welcome message
-    labelWelcome.textContent = `Login to get started`;
-
-    // Hide elements and data
-    containerApp.style.opacity = "0";
-
-    // Reset input fields
-    inputClosePin.value = inputCloseUsername.value = "";
-
-    displayPopup("You've been logged out!");
-    closePopup();
-  }, (duration + 1) * 1000);
-}
+// 4- Calculating Account's In, Out, and Interest
 function calcAccountSummary(account) {
   const movements = account.movements;
   // IN
@@ -277,22 +275,16 @@ function calcAccountSummary(account) {
 
   labelSumInterest.textContent = formatAmount(interest, account);
 }
+
+// 5- Collective function to refactor process of updating an account
 function updateAccount(account, sort = false) {
   calcAccountSummary(account);
   displayBalance(account);
   sort ? displayMovements(account, true) : displayMovements(account);
   alternateColor();
 }
-function alternateColor() {
-  document.querySelectorAll(".movements__row").forEach(function (row, index) {
-    console.log("testts");
-    if (index % 2 === 0) {
-      row.style.backgroundColor = "#f9f6e8";
-    }
-  });
-}
 
-// Account logic
+// 6- Makeing usernames out of owner names
 function createUsernames(accs) {
   accs.forEach(function (account) {
     account.username = account.owner
@@ -301,6 +293,8 @@ function createUsernames(accs) {
       .join("");
   });
 }
+
+// 7- Validating login creds
 function checkLogin(username, pass, accounts) {
   for (const acc of accounts) {
     if (acc.username == username && acc.pin == pass) {
@@ -310,7 +304,49 @@ function checkLogin(username, pass, accounts) {
   return [false];
 }
 
+// UI Helpers
+// 1- Timer for logging out
+function startTimer(duration) {
+  let remaining = duration;
+
+  const timerId = setInterval(function () {
+    let min = String(Math.floor(remaining / 60)).padStart(2, 0);
+    let sec = String(Math.floor(remaining % 60)).padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+    --remaining;
+
+    if (remaining < 0) {
+      clearInterval(timerId); // Clears the interval
+    }
+  }, 1000);
+
+  setTimeout(function () {
+    // Reset welcome message
+    labelWelcome.textContent = `Login to get started`;
+
+    // Hide elements and data
+    containerApp.style.opacity = "0";
+
+    // Reset input fields
+    inputClosePin.value = inputCloseUsername.value = "";
+
+    displayPopup("You've been logged out!");
+    closePopup();
+  }, (duration + 1) * 1000);
+}
+
+// 2- Alternating the rows' colours based on indices
+function alternateColor() {
+  document.querySelectorAll(".movements__row").forEach(function (row, index) {
+    if (index % 2 === 0) {
+      row.style.backgroundColor = "#f9f6e8";
+    }
+  });
+}
+
 // Event handlers
+
+// 1- Login Event Handler
 btnLogin.addEventListener("click", function (e) {
   e.preventDefault();
   const loginFeedback = checkLogin(
@@ -338,6 +374,7 @@ btnLogin.addEventListener("click", function (e) {
   inputLoginPin.blur();
 });
 
+// 2- Transferring Money Event Handler
 btnTransfer.addEventListener("click", function (e) {
   e.preventDefault();
 
@@ -367,8 +404,8 @@ btnTransfer.addEventListener("click", function (e) {
         displayPopup("Transfer Completed!");
         closePopup();
         // Add transfer date
-        loggedAccount.movementsDates.push(new Date().toISOString());
-        validTo.movementsDates.push(new Date().toISOString());
+        loggedAccount.movementsDates.push(new Date());
+        validTo.movementsDates.push(new Date());
         // Update the interface
         updateAccount(loggedAccount);
       } else {
@@ -388,6 +425,7 @@ btnTransfer.addEventListener("click", function (e) {
   }
 });
 
+// 3- Deleting an Account Event Handler
 btnClose.addEventListener("click", function (e) {
   e.preventDefault();
   if (
@@ -417,6 +455,7 @@ btnClose.addEventListener("click", function (e) {
   }
 });
 
+// 4- Requesting a Loan Event Handler
 btnLoan.addEventListener("click", function (e) {
   e.preventDefault();
   const loanAmount = Math.floor(inputLoanAmount.value);
@@ -429,7 +468,7 @@ btnLoan.addEventListener("click", function (e) {
   ) {
     displayPopup("Loan Successfully Deposited");
     closePopup();
-    loggedAccount.movementsDates.push(new Date().toISOString());
+    loggedAccount.movementsDates.push(new Date());
     loggedAccount.movements.push(loanAmount);
     updateAccount(loggedAccount);
   } else {
@@ -439,11 +478,9 @@ btnLoan.addEventListener("click", function (e) {
   inputLoanAmount.value = "";
 });
 
+// 5- Sorting Transactions Event Handler
 btnSort.addEventListener("click", function (e) {
   e.preventDefault();
   sort = !sort;
   updateAccount(loggedAccount, sort);
 });
-
-// Initial operations
-createUsernames(accounts);
