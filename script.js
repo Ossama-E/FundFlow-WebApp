@@ -128,7 +128,7 @@ const account7 = {
   locale: "en-US",
 };
 // HTML element selectors
-const accounts = [account1, account2, account3, account4, account5];
+const accounts = [account1, account2, account3, account4, account5, account6];
 
 // HTML element selectors
 const labelWelcome = document.querySelector(".welcome");
@@ -168,10 +168,10 @@ const currencies = new Map([
   ["GBP", "Pound sterling"],
 ]);
 
-// Temporary login
-loggedAccount = account1;
-updateAccount(loggedAccount);
-containerApp.style.opacity = 100;
+// // Temporary login
+// loggedAccount = account1;
+// updateAccount(loggedAccount);
+// containerApp.style.opacity = 100;
 
 let currDate = new Date();
 let min = `${currDate.getMinutes()}`.padStart(2, 0);
@@ -388,6 +388,9 @@ btnClose.addEventListener("click", function (e) {
     // Delete Account
     accounts.splice(indexToClose, 1);
 
+    // Reset welcome message
+    labelWelcome.textContent = `Login to get started`;
+
     // Hide elements and data
     containerApp.style.opacity = "0";
 
@@ -402,7 +405,7 @@ btnClose.addEventListener("click", function (e) {
 btnLoan.addEventListener("click", function (e) {
   e.preventDefault();
   const loanAmount = Math.floor(inputLoanAmount.value);
-  if (+loanAmount < 0) {
+  if (+loanAmount <= 0) {
     displayPopup("Please enter a valid amount");
     closePopup();
     inputLoanAmount.value = "";
