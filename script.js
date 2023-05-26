@@ -192,8 +192,7 @@ function displayPopup(message) {
   }, 1500); // Animation duration
 
   // Close the popup after a delay
-  setTimeout(closePopup, 1000); // Adjust this value to change the delay
-  closePopup();
+  setTimeout(closePopup, 2000);
 }
 // 2- Closing the pop-up
 function closePopup() {
