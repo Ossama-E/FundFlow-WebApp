@@ -59,7 +59,7 @@ const account6 = {
 };
 
 const account7 = {
-  owner: "Lionel Messi",
+  owner: "Kylian Mbappe",
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
@@ -303,12 +303,20 @@ function checkLogin(username, pass, accounts) {
   return [false];
 }
 
+// 8- Reset all input fields
+function resetFields() {
+  inputClosePin.value = inputCloseUsername.value = "";
+  inputTransferTo.value = inputTransferAmount.value = "";
+  inputLoanAmount.value = "";
+}
+
 // UI Helpers
 // 1- Timer for logging out
+let timerId = null;
 function startTimer(duration) {
   let remaining = duration;
 
-  const timerId = setInterval(function () {
+  timerId = setInterval(function () {
     let min = String(Math.floor(remaining / 60)).padStart(2, 0);
     let sec = String(Math.floor(remaining % 60)).padStart(2, 0);
     labelTimer.textContent = `${min}:${sec}`;
@@ -327,7 +335,7 @@ function startTimer(duration) {
     containerApp.style.opacity = "0";
 
     // Reset input fields
-    inputClosePin.value = inputCloseUsername.value = "";
+    resetFields();
 
     displayPopup("You've been logged out!");
     closePopup();
@@ -355,6 +363,7 @@ btnLogin.addEventListener("click", function (e) {
   );
   // Login Creds found
   if (loginFeedback[0]) {
+    clearInterval(timerId);
     startTimer(300);
     loggedAccount = loginFeedback[1];
     labelWelcome.textContent = `Welcome Back, ${loggedAccount.owner}`;
@@ -424,7 +433,7 @@ btnTransfer.addEventListener("click", function (e) {
       closePopup();
     }
     // Reset input fields
-    inputTransferTo.value = inputTransferAmount.value = "";
+    resetFields();
   }
 });
 
@@ -451,7 +460,7 @@ btnClose.addEventListener("click", function (e) {
     containerApp.style.opacity = "0";
 
     // Reset input fields
-    inputClosePin.value = inputCloseUsername.value = "";
+    resetFields();
 
     displayPopup("Account Deleted!");
     closePopup();
