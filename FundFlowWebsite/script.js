@@ -58,10 +58,12 @@ btnLearnMore.addEventListener("click", function () {
 // Page Nav and Attaching event listeners to the nav bar
 
 document.querySelector(".nav__links").addEventListener("click", function (e) {
-  e.preventDefault();
-
   // apply the scrollIntoView() method onto whatever the target/child triggered the event
   if (e.target.classList.contains("nav__link")) {
+    if (e.target.classList.contains("login")) {
+      return;
+    }
+    e.preventDefault();
     const section = e.target.getAttribute("href");
     document.querySelector(section).scrollIntoView({ behavior: "smooth" });
   }
