@@ -159,8 +159,8 @@ const sectionObserve = new IntersectionObserver(revealSection, {
 });
 // Attach an observer to all sections
 allSections.forEach((section) => {
-  section.classList.add("section--hidden");
   sectionObserve.observe(section);
+  // section.classList.add("section--hidden");
 });
 
 // Lazy Loading Images
@@ -186,3 +186,57 @@ const imgObserver = new IntersectionObserver(lazyImgFunction, {
 });
 
 allImgs.forEach((img) => imgObserver.observe(img));
+
+// Slider Handling
+
+const slides = document.querySelectorAll(".slide");
+
+let currSlide = 0;
+const mostSlides = slides.length - 1;
+
+const btnLeft = document.querySelector(".slider__btn--left");
+const btnRight = document.querySelector(".slider__btn--right");
+
+function switchSlideTo(currSlide) {
+  slides.forEach((slide, index) => {
+    slide.style.transform = `translateX(${100 * (index - currSlide)}%)`;
+  });
+}
+
+function prevSlide() {
+  currSlide = currSlide == 0 ? mostSlides : currSlide - 1;
+  switchSlideTo(currSlide);
+}
+
+function nextSlide() {
+  currSlide = currSlide == mostSlides ? 0 : currSlide + 1;
+  switchSlideTo(currSlide);
+}
+
+// Right Arrow Click
+btnRight.addEventListener("click", nextSlide);
+// Right Arrow Key Hit
+document.addEventListener("keydown", function (e) {
+  e.key == "ArrowRight" && nextSlide();
+});
+
+// Left Arrow Click
+btnLeft.addEventListener("click", prevSlide);
+// Left Arrow Key Hit
+document.addEventListener("keydown", function (e) {
+  e.key == "ArrowLeft" && prevSlide();
+});
+// Setting up intial positions
+switchSlideTo(0);
+
+// Dots under slides
+const dotContainer = document.querySelector(".dots");
+const insertDots = function () {
+  slides.forEach(function (_, i) {
+    console.log(i);
+    dotContainer.insertAdjacentHTML(
+      "beforeend",
+      `<button class="dots__dot" data-slide="${i}"></button>`
+    );
+  });
+};
