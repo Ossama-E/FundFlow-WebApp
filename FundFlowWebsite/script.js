@@ -119,7 +119,7 @@ function changeOpacity(e) {
   }
 }
 
-allNav.addEventListener("mouseover", changeOpacity.bind(0.5));
+allNav.addEventListener("mouseover", changeOpacity.bind(0.1));
 allNav.addEventListener("mouseout", changeOpacity.bind(1));
 
 const coordsToSwitchBar = section1.getBoundingClientRect();
@@ -159,10 +159,10 @@ const sectionObserve = new IntersectionObserver(revealSection, {
   root: null,
   threshold: 0.15,
 });
-// Attach an observer to all sections
+// Attach an observer to all sections and hide them
 allSections.forEach((section) => {
   sectionObserve.observe(section);
-  // section.classList.add("section--hidden");
+  section.classList.add("section--hidden");
 });
 
 // Lazy Loading Images
@@ -241,4 +241,9 @@ const insertDots = function () {
       `<button class="dots__dot" data-slide="${i}"></button>`
     );
   });
+};
+
+// Set reloading to begining of page
+window.onload = function () {
+  window.scrollTo(0, 0);
 };
